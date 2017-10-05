@@ -2,13 +2,17 @@ package io.wedeploy.example;
 
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
+import org.apache.http.HttpEntity;
 import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
 import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
+import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
 import org.apache.http.impl.client.HttpClientBuilder;
+import org.apache.http.impl.client.CloseableHttpClient;
 import org.apache.http.message.BasicNameValuePair;
+import org.apache.http.util.EntityUtils;
 import org.json.JSONObject;
 import org.springframework.boot.SpringApplication;
 import org.springframework.boot.autoconfigure.EnableAutoConfiguration;
@@ -63,26 +67,24 @@ public class WeDeployController {
             log.info("code: " + code + " email: " + email);
             if (email == null && code != null && code.length() > 0) {
                 // Send post request to google oauth
-                HttpClient client = HttpClientBuilder.create().build();
+                CloseableHttpClient  client = HttpClientBuilder.create().build();
                 HttpPost post = new HttpPost(GOOGLE_OAUTH);
-                post.setHeader("User-Agent", USER_AGENT);
+                post.setHeader("Content-Type", "application/x-www-form-urlencoded");
                 List<NameValuePair> urlParameters = new ArrayList<>();
                 urlParameters.add(new BasicNameValuePair("code", code));
                 urlParameters.add(new BasicNameValuePair("client_id", "105248247635-270o2p37be66bbmhd7dt7nhshqu6ug2l.apps.googleusercontent.com"));
-                urlParameters.add(new BasicNameValuePair("client_secret", "FmYfHYybJ7YP6fQLNny6XKjp&redirect_uri=https%3A%2F%2Fsaxapi-181710.appspot.com%2F"));
+                urlParameters.add(new BasicNameValuePair("client_secret", "FmYfHYybJ7YP6fQLNny6XKjp"));
                 urlParameters.add(new BasicNameValuePair("grant_type", "authorization_code"));
+                urlParameters.add(new BasicNameValuePair("redirect_uri", "https://openid-testgoogleopenid.wedeploy.io/openId" ));
                 post.setEntity(new UrlEncodedFormEntity(urlParameters));
-                HttpResponse res = client.execute(post);
-                log.info("Response Code from Google oauth: " + res.getStatusLine().getStatusCode());
-                BufferedReader rd = new BufferedReader(new InputStreamReader(res.getEntity().getContent()));
-                StringBuffer result = new StringBuffer();
-                String line = "";
-                while ((line = rd.readLine()) != null) {
-                    result.append(line);
-                }
+                CloseableHttpResponse res = client.execute(post);
+                log.info("Response Code from Google oauth: " + res.getStatusLine());
+                HttpEntity entity = res.getEntity();
+                String responseString = EntityUtils.toString(entity);
+                log.info("Response body from Google oauth: " + responseString);
 
                 // read response
-                JSONObject json = new JSONObject(line);
+                JSONObject json = new JSONObject(responseString);
                 String idToken = json.getString("id_token");
                 log.info("id_token: " + idToken);
                 DecodedJWT jwt = JWT.decode(idToken);
