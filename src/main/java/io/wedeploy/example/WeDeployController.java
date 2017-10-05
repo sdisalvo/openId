@@ -104,8 +104,5 @@ public class WeDeployController {
         } catch ( Exception x ) {
             log.log( Level.SEVERE, "Error: ", x);
         }
-
     }
-
-
 }
