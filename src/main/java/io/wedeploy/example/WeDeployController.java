@@ -97,7 +97,7 @@ public class WeDeployController {
                 if (email != null) {
                     response.getWriter().println("already logged: " + email);
                 } else {
-                    response.getWriter().println("<html><p><a title=\"login google\" href=\"https://accounts.google.com/o/oauth2/v2/auth?client_id=105248247635-270o2p37be66bbmhd7dt7nhshqu6ug2l.apps.googleusercontent.com&amp;response_type=code&amp;scope=openid%20email&amp;redirect_uri=https://saxapi-181710.appspot.com/demo&amp;state=ciaociao&amp;login_hint=sdisalvo@gmail.com&amp;nonce=0394852-3190485-2490001\">login with google</a></p></html>");
+                    response.getWriter().println("<html><p><a title=\"login google\" href=\"https://accounts.google.com/o/oauth2/v2/auth?client_id=105248247635-270o2p37be66bbmhd7dt7nhshqu6ug2l.apps.googleusercontent.com&amp;response_type=code&amp;scope=openid%20email&amp;redirect_uri=https://tvk5jwi-testgoogleopenid.wedeploy.io/openId&amp;state=ciaociao&amp;login_hint=sdisalvo@gmail.com&amp;nonce=0394852-3190485-2490001\">login with google</a></p></html>");
                 }
             }
 
