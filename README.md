@@ -1,5 +1,5 @@
-# WeDeploy Java Tutorial
+# Google OpenIDConnect Integration Sample
 
-This template will help you through the process of deploying a Java project on WeDeploy.
+Google's OAuth 2.0 APIs can be used for both authentication and authorization.
 
-> [Visit the tutorial to learn how to start using Java with WeDeploy.](https://wedeploy.com/tutorials/java/)
+> [Based on Google's documentation](https://developers.google.com/identity/protocols/OpenIDConnect)
