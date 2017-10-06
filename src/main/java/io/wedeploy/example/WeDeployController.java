@@ -3,9 +3,7 @@ package io.wedeploy.example;
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import org.apache.http.HttpEntity;
-import org.apache.http.HttpResponse;
 import org.apache.http.NameValuePair;
-import org.apache.http.client.HttpClient;
 import org.apache.http.client.entity.UrlEncodedFormEntity;
 import org.apache.http.client.methods.CloseableHttpResponse;
 import org.apache.http.client.methods.HttpPost;
@@ -50,34 +48,49 @@ public class WeDeployController {
         return new ModelAndView("layout");
     }
 
-    // First call. Redirect user to google
+    /**
+     * First call. Redirect user to google
+     *
+     * @param request
+     * @param response
+     */
     @RequestMapping(value = "/login", method = RequestMethod.GET)
     public @ResponseBody void login( HttpServletRequest request, HttpServletResponse response) {
-
-        // Generate a random state to veryfy source in incoming google call
-        String state = new BigInteger(130, new SecureRandom()).toString(32);
-        request.getSession().setAttribute("state", state);
         try {
-            response.getWriter().println(
-                    "<html><p><a title=\"login google\" href=\"https://accounts.google.com/o/oauth2/v2/auth?client_id=105248247635-270o2p37be66bbmhd7dt7nhshqu6ug2l.apps.googleusercontent.com&amp;response_type=code&amp;scope=openid%20email&amp;redirect_uri=https://openid-testgoogleopenid.wedeploy.io/openId&amp;" +
-                            "state=" + state + "&amp;login_hint=sdisalvo@gmail.com&amp;nonce=0394852-3190485-2490001\">login with google</a></p></html>");
+            // Verify if the user is already logged
+            String email = (String) request.getSession().getAttribute("email");
+            if (email != null) {
+                response.getWriter().println("already logged: " + email);
+            } else {
+                // Generate a random state to verify source in incoming google call
+                String state = new BigInteger(130, new SecureRandom()).toString(32);
+                request.getSession().setAttribute("state", state);
+                response.getWriter().println(
+                        "<html><p><a title=\"login google\" href=\"https://accounts.google.com/o/oauth2/v2/auth?client_id=105248247635-270o2p37be66bbmhd7dt7nhshqu6ug2l.apps.googleusercontent.com&amp;response_type=code&amp;scope=openid%20email&amp;redirect_uri=https://openid-testgoogleopenid.wedeploy.io/openId&amp;" +
+                                "state=" + state + "&amp;login_hint=sdisalvo@gmail.com&amp;nonce=0394852-3190485-2490001\">login with google</a></p></html>");
+            }
         } catch (IOException e) {
-            e.printStackTrace();
+            log.log(Level.SEVERE, "Error: ", e);
         }
     }
 
-
+    /**
+     * redirect_url called by google after user login
+     *
+     * @param request
+     * @param response
+     */
     @RequestMapping(value = "/openId", method = RequestMethod.GET)
     public @ResponseBody void generateReport( HttpServletRequest request, HttpServletResponse response) {
         try {
             String code = request.getParameter("code");
             String state = request.getParameter("state");
-            String email = (String) request.getSession().getAttribute("email");
 
-            log.info("code: " + code + " email: " + email + "state = " + state);
+            log.info("code: " + code + " state = " + state);
 
-            // call from google
+            // verify input parameters
             if (state != null && code != null) {
+
                 // verify incoming call
                 String stateSession = request.getSession().getAttribute("state").toString();
                 if (stateSession.equals(state) == false) {
@@ -101,21 +114,14 @@ public class WeDeployController {
                 String responseString = EntityUtils.toString(entity);
                 log.info("Response body from Google oauth: " + responseString);
 
-                // read response
+                // read user email address in the response
                 JSONObject json = new JSONObject(responseString);
                 String idToken = json.getString("id_token");
                 log.info("id_token: " + idToken);
                 DecodedJWT jwt = JWT.decode(idToken);
-                email = jwt.getClaim("email").asString();
+                String email = jwt.getClaim("email").asString();
                 response.getWriter().println("Logged!!! your email address is: " + email);
-
                 request.getSession().setAttribute("email", email);
-
-                response.getWriter().println("Your email is: " + email);
-
-            } else if (email != null) {
-                // second call from autenticated user
-                response.getWriter().println("already logged: " + email);
             }
         } catch (Exception x) {
             log.log(Level.SEVERE, "Error: ", x);
