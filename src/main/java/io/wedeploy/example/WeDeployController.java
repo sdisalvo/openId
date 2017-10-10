@@ -81,7 +81,7 @@ public class WeDeployController {
      * @param response
      */
     @RequestMapping(value = "/openId", method = RequestMethod.GET)
-    public @ResponseBody void generateReport( HttpServletRequest request, HttpServletResponse response) {
+    public @ResponseBody void openId( HttpServletRequest request, HttpServletResponse response) {
         try {
             String code = request.getParameter("code");
             String state = request.getParameter("state");
@@ -93,7 +93,7 @@ public class WeDeployController {
 
                 // verify incoming call
                 String stateSession = request.getSession().getAttribute("state").toString();
-                if (stateSession.equals(state) == false) {
+                if (stateSession == null || stateSession.equals(state) == false) {
                     throw new Exception("Invalid state found.");
                 }
 
